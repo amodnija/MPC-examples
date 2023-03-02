@@ -1,0 +1,112 @@
+clear all;
+close all
+A = [   -0.66   -49;
+        1    0];
+B = [  66.66 
+           0];
+NT=50;
+N=2;
+n=2;
+m=1; 
+Q=eye(n); 
+QN=Q; 
+R=eye(m);
+Fx=[1 0;
+    0 1;
+    -1 0;
+    0 -1];
+gx=[0.5;
+    0.5;
+    0.5;
+    0.5];
+Fu=[1;
+    -1];
+gu=[0.3;
+    0.3];
+
+
+x0=[0;
+    0.5]; 
+x=zeros(n,NT+1); 
+x(:,1)=x0;
+Xk=zeros(n*(N+1),1); 
+Xk(1:n,1)=x0;
+u=zeros(m,NT);
+Uk=zeros(m*N,1);
+zk=[Xk;Uk];
+
+for i=1:N+1
+    AX((i-1)*n+1:i*n,:)=A^(i-1);
+end
+for i=1:N+1
+  for j=1:N
+      if i>j
+          BU((i-1)*n+1:i*n,(j-1)*m+1:j*m)=A^(i-j-1)*B;
+      else
+          BU((i-1)*n+1:i*n,(j-1)*m+1:j*m)=zeros(n,m);
+      end    
+  end
+end
+QX=Q;
+RU=R;
+FX=Fx;
+gX=gx;
+FU=Fu;
+gU=gu;
+for i=1:N-1
+  QX=blkdiag(QX,Q); 
+  RU=blkdiag(RU,R);
+  FX=blkdiag(FX,Fx);
+  gX=[gX;gx];
+  FU=blkdiag(FU,Fu);
+  gU=[gU;gu];
+end
+QX=blkdiag(QX,QN);
+FX=blkdiag(FX,Fx);
+gX=[gX;gx];
+H=blkdiag(QX,RU);
+
+for k=1:NT
+   xk=x(:,k);  
+   fun = @(z)z'*H*z;
+   F=blkdiag(FX,FU);
+   g=[gX;gU];
+   Feq=[eye((N+1)*n) -BU];
+   geq=AX*xk;
+   lb=[];
+   ub=[];
+   z=fmincon(fun,zk,F,g,Feq,geq,lb,ub)
+   u(:,k)=z((N+1)*n+1:(N+1)*n+m,1);
+   x(:,k+1)=A*x(:,k)+B*u(:,k);
+   zk=z;
+end    
+
+figure(1)
+time = (0:NT);
+subplot(2,1,1)
+plot(time,x(1,:),'r.-','LineWidth',.7) 
+hold on
+plot(time,x(2,:),'k.-','LineWidth',.7) 
+legend('$x_1$','$x_2$','Interpreter','latex');
+xlabel('$k$','Interpreter','latex');ylabel('$\textbf{x}_{k}$','Interpreter','latex');
+grid on
+ax = gca;
+set(gca,'xtick',[0:5:50])
+set(gca,'ytick',[-10:5:10])
+ax.GridAlpha = 1
+ax.GridLineStyle = ':'
+subplot(2,1,2)
+stairs(time(1:end-1),u,'r.-','LineWidth',.7)
+xlabel('$k$','Interpreter','latex');ylabel('${u}_{k}$','Interpreter','latex');
+grid on
+ax = gca;
+set(gca,'xtick',[0:5:50])
+set(gca,'ytick',[-1:.5:1])
+ax.GridAlpha = 1
+ax.GridLineStyle = ':'
+print -dsvg lmpc1
+
+
+
+
+

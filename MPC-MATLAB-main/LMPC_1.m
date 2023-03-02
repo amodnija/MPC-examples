@@ -2,17 +2,32 @@
 clear all;
 close all
 % System parameters and simulation parameters
-A=[0.9 0.2;-0.4 0.8];
-B=[0.1;0.01];
-NT=50;N=5;n=2;m=1; 
+A = [   -0.66   -49;
+        1    0];
+B = [  66.66 
+           0];
+NT=50;N=2;n=2;m=1; 
 Q=eye(n); QN=Q; R=eye(m);
-Fx=[1 0;0 1;-1 0;0 -1];gx=[10;10;10;10];
-Fu=[1;-1];gu=[1;1];
+Fx=[1 0;
+    0 1;
+    -1 0;
+    0 -1];
+gx=[0.5;
+    0.5;
+    0.5;
+    0.5];
+Fu=[1;
+    -1];
+gu=[0.3;
+    0.3];
 
 
-x0=[10;5]; 
-x=zeros(n,NT+1); x(:,1)=x0;
-Xk=zeros(n*(N+1),1); Xk(1:n,1)=x0;
+x0=[0;
+    0.5]; 
+x=zeros(n,NT+1); 
+x(:,1)=x0;
+Xk=zeros(n*(N+1),1); 
+Xk(1:n,1)=x0;
 u=zeros(m,NT);
 Uk=zeros(m*N,1);
 zk=[Xk;Uk];
